@@ -1,0 +1,8 @@
+source 'https://github.com/CocoaPods/Specs.git'
+platform :ios, '9.0'
+
+target 'SwiftDemoApp' do
+  pod 'GoogleMaps'
+  pod 'Google-Maps-iOS-Utils', :path => '../..'
+  pod 'GooglePlaces'
+end
