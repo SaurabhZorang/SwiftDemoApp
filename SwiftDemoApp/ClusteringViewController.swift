@@ -53,7 +53,7 @@ class ClusteringViewController: UIViewController, GMUClusterManagerDelegate, GMS
     super.viewDidLoad()
 
     // Set up the cluster manager with default icon generator and renderer.
-    let iconGenerator:CustomClusterIconGenerator =  CustomClusterIconGenerator()
+    let iconGenerator:GMUDefaultClusterIconGenerator =  GMUDefaultClusterIconGenerator()
     
     let algorithm = GMUNonHierarchicalDistanceBasedAlgorithm()
     let renderer = GMUDefaultClusterRenderer(mapView: mapView, clusterIconGenerator: iconGenerator)
@@ -72,17 +72,84 @@ class ClusteringViewController: UIViewController, GMUClusterManagerDelegate, GMS
   }
 
     //MARK: - GMUClusterRenderer
-    func renderer(_ renderer: GMUClusterRenderer, markerFor object: Any) -> GMSMarker? {
+//    func renderer(_ renderer: GMUClusterRenderer, markerFor object: Any) -> GMSMarker? {
+//
+////        let markerImage = UIImage(named: "qaddo")!.withRenderingMode(.alwaysTemplate)
+////        //creating a marker view
+////        let markerView = UIImageView(image: markerImage)
+////        let text = UILabel()
+////        text.center=markerView.center
+////        text.text="23"
+////        text.textColor=UIColor.red
+////        markerView.addSubview(text)
+//
+//        let marker = GMSMarker()
+////        marker.title = "Jolla"
+////        marker.iconView=markerView
+//        marker.icon = UIImage(named: "qaddo")
+//
+//        return marker
+//    }
+    
+    
+    func textToImage(drawText: NSString, inImage: UIImage) -> UIImage{
         
-        let marker = GMSMarker()
-        marker.title = "Jolla"
-        //new_secure
-        //new_visited
-        //tanvisitedselected
-        //tanvisitedunselected
-        marker.icon = UIImage(named: "qaddo")
-        return marker
+        // Setup the font specific variables
+        let textColor = UIColor.red
+        let textFont = UIFont(name: "Helvetica Bold", size: 18)!
+        
+        // Setup the image context using the passed image
+        let scale = UIScreen.main.scale
+        UIGraphicsBeginImageContextWithOptions(inImage.size, false, scale)
+        
+        // Setup the font attributes that will be later used to dictate how the text should be drawn
+//        let textFontAttributes = [
+//            NSFontAttributeName: textFont,
+//            NSForegroundColorAttributeName: textColor,
+//            NSTextAlignment:NSTextAlignment.center
+//            ]
+        
+        //text attributes
+        let font=UIFont(name: "Helvetica-Bold", size: 12)!
+        let text_style=NSMutableParagraphStyle()
+        text_style.alignment=NSTextAlignment.center
+        let text_color=UIColor.red
+        let textFontAttributes=[NSFontAttributeName:font, NSParagraphStyleAttributeName:text_style, NSForegroundColorAttributeName:text_color]
+        
+        // Put the image into a rectangle as large as the original image
+        inImage.draw(in:CGRect(x:0, y:0, width:inImage.size.width,height: inImage.size.height))
+        // Create a point within the space that is as bit as the image
+        let rect = CGRect(x:0, y:0, width:inImage.size.width,height: inImage.size.height)
+        
+        
+        let text_h=font.lineHeight
+        let text_y=((inImage.size.height-text_h)/2) - 3
+        let text_rect=CGRect(x: 0, y: text_y, width: inImage.size.width, height: text_h)
+        // Draw the text into an image
+        drawText.draw(in: text_rect.integral, withAttributes: textFontAttributes)
+        
+        // Create a new image out of the images we have created
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        
+        // End the context now that we have the image we need
+        UIGraphicsEndImageContext()
+        
+        //Pass the image back up to the caller
+        return newImage!
+        
     }
+    
+    func renderer(_ renderer: GMUClusterRenderer, willRenderMarker marker: GMSMarker) {
+        if let _ = marker.userData as? POIItem {
+            marker.icon = UIImage(named: "qaddo")
+        } else {
+            let image = textToImage(drawText: "123", inImage: UIImage(named: "new_pinvisted")!)
+                    let markerView = UIImageView(image:image )
+                    marker.iconView=markerView
+        }
+    }
+    
+    
   // MARK: - GMUClusterManagerDelegate
 
   func clusterManager(_ clusterManager: GMUClusterManager, didTap cluster: GMUCluster) -> Bool {
@@ -97,13 +164,13 @@ class ClusteringViewController: UIViewController, GMUClusterManagerDelegate, GMS
 
   func mapView(_ mapView: GMSMapView, didTap marker: GMSMarker) -> Bool {
     
-    
     if let poiItem = marker.userData as? POIItem {
       NSLog("Did tap marker for cluster item \(poiItem.name)")
     } else {
       NSLog("Did tap a normal marker")
     }
     return false
+    
   }
 
   // MARK: - Private
@@ -160,3 +227,4 @@ class CustomClusterIconGenerator:GMUDefaultClusterIconGenerator
     }
    
 }
+
